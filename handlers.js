@@ -280,24 +280,16 @@ const handleState = (msg) => {
             const userTopics = new Set(user.topics || []);
 
             for (const line of textLines) {
-                const parts = line.split(',').map(p => p.trim());
+                const parts = line.split(',');
                 if (parts.length < 2) continue;
 
-                let japanese, furigana, russian, topic;
-
-                if (parts.length >= 4) {
-                    [japanese, furigana, russian, topic] = parts;
-                } else if (parts.length === 3) {
-                    [japanese, furigana, russian] = parts;
-                    topic = 'Без темы';
-                } else {
-                    [japanese, russian] = parts;
-                    furigana = '';
-                    topic = 'Без темы';
-                }
+                const topic = parts.length > 2 ? parts.pop().trim() : 'Без темы';
+                const russian = parts.pop().trim();
+                const japanese = parts.shift().trim();
+                const furigana = parts.join(',').trim(); // Все, что осталось посередине
 
                 if (japanese && russian) {
-                    user.cards.push({
+                    const newCard = {
                         id: `${Date.now()}-${Math.random()}`,
                         japanese,
                         furigana: furigana || '',
@@ -307,14 +299,17 @@ const handleState = (msg) => {
                         efactor: 2.5,
                         interval: 0,
                         nextReviewDate: new Date().toISOString(),
-                    });
-                    if (!userTopics.has(topic)) {
+                    };
+                    user.cards.push(newCard);
+
+                    if (topic !== 'Без темы' && !userTopics.has(topic)) {
                         user.topics.push(topic);
                         userTopics.add(topic);
                     }
                     count++;
                 }
             }
+
             bot.sendMessage(chatId, `✅ Импорт из текста завершен! Добавлено ${count} новых карточек.`);
             user.state = null;
             writeDb(db);
