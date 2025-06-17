@@ -25,14 +25,19 @@ const writeDb = (data) => {
     }
 };
 
+/**
+ * Инициализирует нового пользователя в базе данных.
+ * @param {number} chatId - ID чата пользователя.
+ */
 const initUser = (chatId) => {
     const db = readDb();
     if (!db[chatId]) {
         db[chatId] = {
             cards: [],
+            // НОВОЕ ПОЛЕ: хранит список тем пользователя.
+            topics: [],
             settings: {
                 frontSide: 'japanese',
-                // НОВОЕ ПОЛЕ:
                 showFuriganaImmediately: false,
             },
             session: {},
